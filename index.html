@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TURBO Danger Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0A0A; --surface:#131313; --surface-2:#181818; --line:#262626; --line-soft:#1D1D1D;
+    --ivory:#F5F3EF; --ivory-dim:#8A8782; --ivory-faint:#5C5A56;
+    --lime:#C8FF3D; --amber:#D9812C; --amber-bright:#F0A24E; --blue:#5B8DEF; --red:#E5484D;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ivory);font-family:'JetBrains Mono',monospace;-webkit-font-smoothing:antialiased;}
+  h1,h2{font-family:'Fraunces',serif;font-weight:600;letter-spacing:-0.01em;}
+  a{color:inherit;}
+  .shell{max-width:1000px;margin:0 auto;padding:32px 24px 80px;}
+  .topline{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:10px;margin-bottom:8px;}
+  .eyebrow{font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--lime);}
+  .title{font-size:19px;font-weight:600;margin-top:4px;font-family:'Fraunces',serif;}
+  .pill{font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;background:var(--surface-2);border:1px solid var(--line);padding:6px 12px;border-radius:999px;color:var(--ivory-dim);display:inline-block;}
+  .pill.lime{color:var(--lime);border-color:#2f3d12;} .pill.amber{color:var(--amber-bright);border-color:#3d2a12;}
+  .note{color:var(--ivory-faint);font-size:11px;margin:4px 0 26px;line-height:1.6;}
+  .section-head{display:flex;justify-content:space-between;align-items:baseline;margin:30px 0 12px;}
+  .section-head h2{font-size:15px;margin:0;}
+  .section-head .small-note{font-size:11px;color:var(--ivory-faint);}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px 22px;}
+  .meters{display:grid;gap:10px;}
+  .meter{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 18px;}
+  .meter-head,.meter-foot{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;}
+  .meter-foot{margin-top:8px;font-size:11px;}
+  .tk{font-family:'Fraunces',serif;font-size:17px;font-weight:600;}
+  .dir{font-size:10.5px;letter-spacing:0.08em;margin-left:6px;} .dir.call{color:var(--lime);} .dir.put{color:var(--amber-bright);}
+  .sid{color:var(--ivory-faint);font-size:11px;margin-left:8px;}
+  .meter-nums{font-size:12px;} .meter-nums span{margin-left:14px;} .k{color:var(--ivory-dim);} .cardv{color:var(--ivory);}
+  .track{position:relative;height:10px;margin-top:10px;background:var(--surface-2);border:1px solid var(--line-soft);border-radius:999px;overflow:hidden;}
+  .fill{height:100%;border-radius:999px;background:var(--lime);transition:width .4s;}
+  .bar-k{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red);}
+  .meter.amber .fill{background:var(--amber-bright);} .meter.red .fill{background:var(--red);}
+  .meter.breach{border-color:var(--red);} .meter.breach .fill{background:repeating-linear-gradient(90deg,var(--red) 0 8px,#5a1e20 8px 16px);}
+  .meter.dead{opacity:.45;} .meter.dead .tk{text-decoration:line-through;} .meter.dead .fill{background:var(--ivory-faint);}
+  .label{font-weight:600;} .meter.red .label,.meter.breach .label{color:var(--red);} .meter.amber .label{color:var(--amber-bright);} .meter.lime .label{color:var(--lime);}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .stat-cell{background:var(--surface);padding:16px;}
+  .stat-cell .lbl{font-size:9.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ivory-dim);margin-bottom:7px;}
+  .stat-cell .val{font-size:16px;font-weight:600;font-family:'Fraunces',serif;}
+  .stat-cell .val.amber{color:var(--amber-bright);} .stat-cell .val.lime{color:var(--lime);}
+  .table-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  th,td{text-align:left;padding:9px 18px;border-bottom:1px solid var(--line-soft);font-size:12px;vertical-align:top;}
+  th{color:var(--ivory-faint);text-transform:uppercase;font-size:10px;letter-spacing:0.06em;font-weight:500;}
+  tr:last-child td{border-bottom:none;}
+  td.dim,.dim{color:var(--ivory-faint);} td.amber,.amber{color:var(--amber-bright);} td.lime,.lime{color:var(--lime);} td.red,.red{color:var(--red);}
+  .broker{color:var(--lime);font-weight:600;} .addr{color:var(--ivory-dim);text-decoration:none;} .addr:hover{color:var(--ivory);}
+  .cta{display:inline-block;margin-top:14px;padding:9px 14px;border:1px solid var(--lime);border-radius:8px;color:var(--lime);text-decoration:none;font-size:12px;}
+  footer{text-align:center;margin-top:36px;font-size:11px;color:var(--ivory-faint);line-height:1.7;}
+  @media (max-width:640px){ .stat-grid{grid-template-columns:repeat(2,1fr);} .meter-nums span{margin-left:8px;} }
+  @media (prefers-reduced-motion:reduce){ .fill{transition:none;} }
+</style></head>
+<body>
+<div class="shell">
+
+  <div class="topline">
+    <div><div class="eyebrow">TURBO Danger Board</div><div class="title">Every open series, closest to death first</div></div>
+    <div><span class="pill">Updated Aug 25, 22:40 UTC</span></div>
+  </div>
+  <p class="note"><span class="pill dim">AAPL $310.29 · frozen close</span> <span class="pill amber">NVDA $214.23 · token market</span><br>
+  Reads the TurboDesk contract and Robinhood Chain explorer directly; nothing here is a wallet connection or an opinion.
+  Card value = units × distance from K. One touch of K kills a series permanently. Rung and haircut per
+  <a href="https://docs.netnet.capital/turbo">the desk's own docs</a>.</p>
+
+  <div class="meters">
+      <div class="meter amber">
+        <div class="meter-head">
+          <div><span class="tk">AAPL</span> <span class="dir call">CALL</span>
+               <span class="sid">#7</span></div>
+          <div class="meter-nums"><span class="k">K $304.92</span> <span class="lev">58x</span>
+               <span class="cardv">card $2.11</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:17.2%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">1.72% to K</span>
+             <span class="dim">10 cards · 2 holders · expires Sep 19</span></div>
+      </div>
+      <div class="meter amber">
+        <div class="meter-head">
+          <div><span class="tk">NVDA</span> <span class="dir put">PUT</span>
+               <span class="sid">#11</span></div>
+          <div class="meter-nums"><span class="k">K $218.55</span> <span class="lev">50x</span>
+               <span class="cardv">card $2.57</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:20.1%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">2.01% to K</span>
+             <span class="dim">1 card · 1 holder · expires Sep 23</span></div>
+      </div>
+      <div class="meter amber">
+        <div class="meter-head">
+          <div><span class="tk">NVDA</span> <span class="dir call">CALL</span>
+               <span class="sid">#1</span></div>
+          <div class="meter-nums"><span class="k">K $209.31</span> <span class="lev">44x</span>
+               <span class="cardv">card $2.82</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:22.9%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">2.29% to K</span>
+             <span class="dim">78 cards · 6 holders · expires Sep 18</span></div>
+      </div>
+      <div class="meter amber">
+        <div class="meter-head">
+          <div><span class="tk">AAPL</span> <span class="dir call">CALL</span>
+               <span class="sid">#3</span></div>
+          <div class="meter-nums"><span class="k">K $303.16</span> <span class="lev">44x</span>
+               <span class="cardv">card $2.82</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:22.9%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">2.29% to K</span>
+             <span class="dim">89 cards · 5 holders · expires Sep 18</span></div>
+      </div>
+      <div class="meter amber">
+        <div class="meter-head">
+          <div><span class="tk">NVDA</span> <span class="dir call">CALL</span>
+               <span class="sid">#5</span></div>
+          <div class="meter-nums"><span class="k">K $209.02</span> <span class="lev">41x</span>
+               <span class="cardv">card $2.99</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:24.3%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">2.43% to K</span>
+             <span class="dim">22 cards · 4 holders · expires Sep 19</span></div>
+      </div>
+      <div class="meter lime">
+        <div class="meter-head">
+          <div><span class="tk">NVDA</span> <span class="dir put">PUT</span>
+               <span class="sid">#6</span></div>
+          <div class="meter-nums"><span class="k">K $226.44</span> <span class="lev">18x</span>
+               <span class="cardv">card $7.01</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:57.0%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">5.70% to K</span>
+             <span class="dim">26 cards · 5 holders · expires Sep 19</span></div>
+      </div>
+      <div class="meter lime">
+        <div class="meter-head">
+          <div><span class="tk">NVDA</span> <span class="dir call">CALL</span>
+               <span class="sid">#10</span></div>
+          <div class="meter-nums"><span class="k">K $201.74</span> <span class="lev">17x</span>
+               <span class="cardv">card $7.43</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:58.3%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">5.83% to K</span>
+             <span class="dim">14 cards · 5 holders · expires Sep 23</span></div>
+      </div>
+      <div class="meter lime">
+        <div class="meter-head">
+          <div><span class="tk">NVDA</span> <span class="dir put">PUT</span>
+               <span class="sid">#2</span></div>
+          <div class="meter-nums"><span class="k">K $226.75</span> <span class="lev">17x</span>
+               <span class="cardv">card $7.18</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:58.4%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">5.84% to K</span>
+             <span class="dim">42 cards · 4 holders · expires Sep 18</span></div>
+      </div>
+      <div class="meter lime">
+        <div class="meter-head">
+          <div><span class="tk">AAPL</span> <span class="dir put">PUT</span>
+               <span class="sid">#4</span></div>
+          <div class="meter-nums"><span class="k">K $328.42</span> <span class="lev">17x</span>
+               <span class="cardv">card $7.18</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:58.4%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">5.84% to K</span>
+             <span class="dim">3 cards · 3 holders · expires Sep 18</span></div>
+      </div>
+      <div class="meter lime">
+        <div class="meter-head">
+          <div><span class="tk">AAPL</span> <span class="dir put">PUT</span>
+               <span class="sid">#8</span></div>
+          <div class="meter-nums"><span class="k">K $330.33</span> <span class="lev">15x</span>
+               <span class="cardv">card $7.89</span></div>
+        </div>
+        <div class="track"><div class="fill" style="width:64.6%"></div><div class="bar-k"></div></div>
+        <div class="meter-foot"><span class="label">6.46% to K</span>
+             <span class="dim">45 cards · 10 holders · expires Sep 19</span></div>
+      </div></div>
+
+  <div class="section-head"><h2>StonkBrokers × TURBO</h2><span class="small-note">Overlap of activated broker owners/vaults with card holders</span></div>
+  <div class="stat-grid">
+    <div class="stat-cell"><div class="lbl">Activated brokers</div><div class="val">1,831</div></div>
+    <div class="stat-cell"><div class="lbl">Brokers holding TURBO</div><div class="val lime">1</div></div>
+    <div class="stat-cell"><div class="lbl">All TURBO holders</div><div class="val">33</div></div>
+    <div class="stat-cell"><div class="lbl">Open card value</div><div class="val amber">$1,525</div></div>
+  </div>
+
+  <div class="section-head"><h2>Recent buys and cash-outs</h2><span class="small-note">Board series only; blackjack chips excluded</span></div>
+  <div class="table-card"><table><tr><th>When</th><th>Who</th><th></th><th>Cards</th></tr><tr><td class='dim'>Aug 25, 18:41</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xe05261c6298848201dacc94258903d21a2f69eee">0xe052…9eee</a></td><td class='lime'>bought</td><td>1 × NVDA TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 25, 03:33</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x9ae87514d1892e28fd9ad86ea53aba9bd3f0b16d">0x9ae8…b16d</a></td><td class='lime'>bought</td><td>1 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 25, 01:35</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x1847f0a07c4940492674d40b72677ac623bdecc3">0x1847…ecc3</a></td><td class='lime'>bought</td><td>1 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 24, 18:17</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x9ae87514d1892e28fd9ad86ea53aba9bd3f0b16d">0x9ae8…b16d</a></td><td class='lime'>bought</td><td>1 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 18:16</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x9ae87514d1892e28fd9ad86ea53aba9bd3f0b16d">0x9ae8…b16d</a></td><td class='lime'>bought</td><td>2 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 18:13</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xaa853eb2e6ca5ef6e182b64190b5861ce411224a">0xaa85…224a</a></td><td class='lime'>bought</td><td>1 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 18:11</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xea5d1df3f7cd9d8013b3779acd703cbe4a272ace">0xea5d…2ace</a></td><td class='lime'>bought</td><td>1 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 18:10</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x5c9fdaf1063fb9b97373ba70881329747590bb5e">0x5c9f…bb5e</a></td><td class='amber'>cashed out</td><td>1 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 18:09</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x5c9fdaf1063fb9b97373ba70881329747590bb5e">0x5c9f…bb5e</a></td><td class='lime'>bought</td><td>1 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 18:08</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x9ec47661d8b3544ace1a087d7798b63074d9354d">0x9ec4…354d</a></td><td class='lime'>bought</td><td>1 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 24, 18:07</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x9ec47661d8b3544ace1a087d7798b63074d9354d">0x9ec4…354d</a></td><td class='lime'>bought</td><td>1 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 18:07</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xce91f17d8762ac42527d6a8c9567dd6f4c912013">0xce91…2013</a></td><td class='lime'>bought</td><td>6 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 18:06</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x9ec47661d8b3544ace1a087d7798b63074d9354d">0x9ec4…354d</a></td><td class='lime'>bought</td><td>1 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 18:06</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x9ec47661d8b3544ace1a087d7798b63074d9354d">0x9ec4…354d</a></td><td class='lime'>bought</td><td>1 × NVDA TURBO 25X CALL</td></tr><tr><td class='dim'>Aug 24, 17:13</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xce91f17d8762ac42527d6a8c9567dd6f4c912013">0xce91…2013</a></td><td class='amber'>cashed out</td><td>5 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 24, 15:39</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x37c73454b3bbf3cffa0a4425ca00f58a8d475092">0x37c7…5092</a></td><td class='amber'>cashed out</td><td>15 × NVDA TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 24, 10:34</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xc5af7c07b3917ed8ab4b4903e1fd1496c9402778">0xc5af…2778</a></td><td class='lime'>bought</td><td>1 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 24, 06:46</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x643442ce69ecd5c623c579bfc76e7ab2c3930eac">0x6434…0eac</a></td><td class='lime'>bought</td><td>1 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 23, 16:03</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x26b06692e55042fddcdaa04a671ee2069c01d5de">0x26b0…d5de</a></td><td class='amber'>cashed out</td><td>1 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 23, 16:02</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x26b06692e55042fddcdaa04a671ee2069c01d5de">0x26b0…d5de</a></td><td class='amber'>cashed out</td><td>1 × NVDA TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 22, 18:26</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xfc1a7716136cae629dac9bd91b4187e826083f72">0xfc1a…3f72</a></td><td class='amber'>cashed out</td><td>8 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 22, 16:45</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xfc1a7716136cae629dac9bd91b4187e826083f72">0xfc1a…3f72</a></td><td class='lime'>bought</td><td>8 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 22, 14:52</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xce91f17d8762ac42527d6a8c9567dd6f4c912013">0xce91…2013</a></td><td class='amber'>cashed out</td><td>5 × NVDA TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 22, 11:49</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x111fbf7b389e024d09f35fb091d7d4479b321b0a">0x111f…1b0a</a></td><td class='amber'>cashed out</td><td>1 × NVDA TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 22, 08:15</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x3b09fd8be6e51a95d818853c18e813a9cc4eaf32">0x3b09…af32</a></td><td class='amber'>cashed out</td><td>1 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 21, 22:29</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x44ab4028d9ae992bcfe775f71620d667fbbffaa3">0x44ab…faa3</a></td><td class='amber'>cashed out</td><td>9 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 21, 22:28</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x44ab4028d9ae992bcfe775f71620d667fbbffaa3">0x44ab…faa3</a></td><td class='amber'>cashed out</td><td>15 × NVDA TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 21, 21:32</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x794e7f7ee2599ab3c17e0ed0fd879331444fceac">0x794e…ceac</a></td><td class='amber'>cashed out</td><td>1 × NVDA TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 21, 21:31</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x794e7f7ee2599ab3c17e0ed0fd879331444fceac">0x794e…ceac</a></td><td class='amber'>cashed out</td><td>1 × AAPL TURBO 25X PUT</td></tr><tr><td class='dim'>Aug 21, 20:48</td><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x51134f40f625abb127d1bf330701037416e8878c">0x5113…878c</a></td><td class='lime'>bought</td><td>2 × AAPL TURBO 25X PUT</td></tr></table></div>
+
+  <div class="section-head"><h2>Breaches and knock-outs</h2><span class="small-note">A breach on the off-hours rung can clear if the price recovers before enforcement</span></div>
+  <div class="table-card"><table><tr><th>When</th><th>Series</th><th>Event</th><th></th></tr><tr><td class='dim' colspan='4'>No breaches or state changes recorded yet.</td></tr></table></div>
+
+  <div class="section-head"><h2>Card holders</h2><span class="small-note">Live value at the current mark; dead cards count as $0</span></div>
+  <div class="table-card"><table><tr><th>Holder</th><th>Cards</th><th>Value</th><th>Positions</th></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xa4aaf1e5e1feed5e83c2d7a3819ba97a7f4c1fb2">0xa4aa…1fb2</a></td><td>123</td><td class='amber'>$346.99</td><td class='dim'>68×#1, 55×#3</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x6ad66f919579fe9bf3bd19d5478c7e9283484587">0x6ad6…4587</a></td><td>35</td><td class='amber'>$251.30</td><td class='dim'>35×#2</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xfbd9f29c4c72741da20d537192d002bf634f8720">0xfbd9…8720</a></td><td>23</td><td class='amber'>$165.81</td><td class='dim'>17×#6, 5×#8, 1×#4</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x37c73454b3bbf3cffa0a4425ca00f58a8d475092">0x37c7…5092</a></td><td>20</td><td class='amber'>$157.77</td><td class='dim'>20×#8</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x8df38e245801da169cbd2d553157add6bbf497cb">0x8df3…97cb</a></td><td>10</td><td class='amber'>$78.89</td><td class='dim'>10×#8</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x44ab4028d9ae992bcfe775f71620d667fbbffaa3">0x44ab…faa3</a></td><td>26</td><td class='amber'>$69.81</td><td class='dim'>17×#5, 9×#7</td></tr><tr><td><span class="broker">Broker #3053</span></td><td>15</td><td class='amber'>$64.12</td><td class='dim'>10×#3, 5×#2</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x28839a9fc4a6465000c5c5775983742545ce5ca5">0x2883…5ca5</a></td><td>17</td><td class='amber'>$47.98</td><td class='dim'>17×#3</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xce91f17d8762ac42527d6a8c9567dd6f4c912013">0xce91…2013</a></td><td>6</td><td class='amber'>$44.58</td><td class='dim'>6×#10</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x50d062790399dcf9607dc9438769db49e1f842c3">0x50d0…42c3</a></td><td>5</td><td class='amber'>$35.06</td><td class='dim'>5×#6</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x51134f40f625abb127d1bf330701037416e8878c">0x5113…878c</a></td><td>4</td><td class='amber'>$31.55</td><td class='dim'>4×#8</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x9ae87514d1892e28fd9ad86ea53aba9bd3f0b16d">0x9ae8…b16d</a></td><td>4</td><td class='amber'>$30.18</td><td class='dim'>3×#10, 1×#8</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x9ec47661d8b3544ace1a087d7798b63074d9354d">0x9ec4…354d</a></td><td>4</td><td class='amber'>$30.18</td><td class='dim'>3×#10, 1×#8</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xef14ebd0f14f1fecfbe3b1016718bf913a16a291">0xef14…a291</a></td><td>10</td><td class='amber'>$28.21</td><td class='dim'>5×#1, 5×#3</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xffeab19aedd0045ce7181e7c5bb8489f8b843fcc">0xffea…3fcc</a></td><td>4</td><td class='amber'>$20.00</td><td class='dim'>2×#5, 2×#6</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x1b70a331ce1c01b86ec986028191f7e41601abfd">0x1b70…abfd</a></td><td>2</td><td class='amber'>$14.36</td><td class='dim'>1×#2, 1×#4</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xf1b29525507a3d8e793cbd822b88a876257f6fab">0xf1b2…6fab</a></td><td>2</td><td class='amber'>$14.36</td><td class='dim'>1×#2, 1×#4</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x1847f0a07c4940492674d40b72677ac623bdecc3">0x1847…ecc3</a></td><td>1</td><td class='amber'>$7.89</td><td class='dim'>1×#8</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x1e3add1956238d739353b5f7949d7b21ef6efcb0">0x1e3a…fcb0</a></td><td>1</td><td class='amber'>$7.89</td><td class='dim'>1×#8</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x643442ce69ecd5c623c579bfc76e7ab2c3930eac">0x6434…0eac</a></td><td>1</td><td class='amber'>$7.89</td><td class='dim'>1×#8</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xc5af7c07b3917ed8ab4b4903e1fd1496c9402778">0xc5af…2778</a></td><td>1</td><td class='amber'>$7.89</td><td class='dim'>1×#8</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xaa853eb2e6ca5ef6e182b64190b5861ce411224a">0xaa85…224a</a></td><td>1</td><td class='amber'>$7.43</td><td class='dim'>1×#10</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xea5d1df3f7cd9d8013b3779acd703cbe4a272ace">0xea5d…2ace</a></td><td>1</td><td class='amber'>$7.43</td><td class='dim'>1×#10</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x70813e78fbc91017715ebaacb7d229e1bf12230a">0x7081…230a</a></td><td>1</td><td class='amber'>$7.01</td><td class='dim'>1×#6</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xc9232177b9772b9cd88c64750aeff81bd2ea697d">0xc923…697d</a></td><td>1</td><td class='amber'>$7.01</td><td class='dim'>1×#6</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x4afe78667cf4963f632155d9eef87ca567edfd06">0x4afe…fd06</a></td><td>2</td><td class='amber'>$5.98</td><td class='dim'>2×#5</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x356e82d30b8c0cc8a0b1dce3c56efbdfed09d19e">0x356e…d19e</a></td><td>2</td><td class='amber'>$5.64</td><td class='dim'>2×#3</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xdc44816d18c1fa71d895a9cef9ee899fc5a2666b">0xdc44…666b</a></td><td>2</td><td class='amber'>$5.64</td><td class='dim'>2×#1</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x95c5ba5eec55259d59d06886609b280b9086291d">0x95c5…291d</a></td><td>2</td><td class='amber'>$5.10</td><td class='dim'>1×#5, 1×#7</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0x270bb8747826231ba0591800eb3e0e56662a16ea">0x270b…16ea</a></td><td>1</td><td class='amber'>$2.82</td><td class='dim'>1×#1</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xd530415d923a3d8b6f44001f82f2385009a281f7">0xd530…81f7</a></td><td>1</td><td class='amber'>$2.82</td><td class='dim'>1×#1</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xf3eec7db82d12a2b2469534c9323d9558d008b91">0xf3ee…8b91</a></td><td>1</td><td class='amber'>$2.82</td><td class='dim'>1×#1</td></tr><tr><td><a class="addr" href="https://robinhoodchain.blockscout.com/address/0xe05261c6298848201dacc94258903d21a2f69eee">0xe052…9eee</a></td><td>1</td><td class='amber'>$2.57</td><td class='dim'>1×#11</td></tr></table></div>
+
+  <div class="section-head"><h2>Broker vaults that could buy a card today</h2><span class="small-note">Stock-token dust and USDG sitting in activated broker vaults</span></div>
+  <div class="table-card"><table><tr><th>Asset</th><th>Vaults holding</th><th>Total</th><th>≥ cheapest live card</th><th>≥ $25</th></tr><tr><td>NVDA</td><td>467</td><td class='amber'>$20,695</td><td class='lime'>404</td><td>293</td></tr><tr><td>AAPL</td><td>550</td><td class='amber'>$17,061</td><td class='lime'>367</td><td>263</td></tr><tr><td>USDG</td><td>520</td><td class='amber'>$16,022</td><td class='lime'>252</td><td>131</td></tr></table></div>
+  <a class="cta" href="https://turbo.netnet.capital">Open the TURBO desk →</a>
+
+  <footer>Not affiliated with NetNet Capital Management, StonkBrokers, or Robinhood. Not investment advice. 18+.<br>
+  Cards are all-or-nothing leveraged positions with an expected life measured in days; the common outcome is a knock-out that pays nothing.</footer>
+</div>
+</body></html>
